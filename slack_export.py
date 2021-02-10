@@ -7,29 +7,16 @@ from time import sleep
 from typing import List
 
 from pick import pick
-from slacker import Slacker
+from slacker import Slacker, Conversations
 
 
-# fetches the complete message history for a channel/group/im
-#
-# pageableObject could be:
-# slack.channel
-# slack.groups
-# slack.im
-#
 # channelId is the id of the channel/group/im you want to download history for.
-def get_history(pageable_object, channel_id: str, page_size: int = 100):
+def get_history(conversation: Conversations, channel_id: str, oldest: int = 0, limit: int = 100):
     messages = list()
     last_timestamp = None
 
     while True:
-        response = pageable_object.history(
-            channel=channel_id,
-            latest=last_timestamp,
-            oldest=0,
-            count=page_size
-        ).body
-
+        response = conversation.history(channel=channel_id, latest=last_timestamp, oldest=oldest, limit=limit).body
         messages.extend(response['messages'])
 
         if response['has_more']:
@@ -134,11 +121,10 @@ def fetch_public_channels(channels: List[dict]):
         return
 
     for channel in channels:
-        channel_dir = channel['name'].encode('utf-8')
-        print(f'Fetching history for Public Channel: {channel_dir}')
-        mkdir(channel_dir)
-        messages = get_history(slack.channels, channel['id'])
-        parse_messages(channel_dir, messages, 'channel')
+        print(f"Fetching history for Public Channel: {channel['name']}")
+        mkdir(channel['name'])
+        messages = get_history(slack.conversations, channel['id'])
+        parse_messages(channel['name'], messages, 'channel')
 
 
 # write channels.json file
@@ -195,7 +181,7 @@ def fetch_direct_messages(dms):
         print(f"Fetching 1:1 DMs with {name}")
         dm_id = dm['id']
         mkdir(dm_id)
-        messages = get_history(slack.im, dm['id'])
+        messages = get_history(slack.conversations, dm['id'])
         parse_messages(dm_id, messages, "im")
 
 
@@ -221,7 +207,7 @@ def fetch_groups(groups):
         mkdir(group_dir)
         messages = list()
         print(f"Fetching history for Private Channel / Group DM: {group['name']}")
-        messages = get_history(slack.groups, group['id'])
+        messages = get_history(slack.conversations, group['id'])
         parse_messages(group_dir, messages, 'group')
 
 
@@ -256,15 +242,15 @@ def bootstrap_key_values():
     print(f'Found {len(users)} Users')
     sleep(1)
 
-    channels = slack.channels.list().body['channels']
+    channels = slack.conversations.list(types='public_channel').body['channels']
     print(f'Found {len(channels)} Public Channels')
     sleep(1)
 
-    groups = slack.groups.list().body['groups']
+    groups = slack.conversations.list(types='private_channel, mpim').body['channels']
     print(f'Found {len(groups)} Private Channels or Group DMs')
     sleep(1)
 
-    dms = slack.im.list().body['ims']
+    dms = slack.conversations.list(types='im').body['channels']
     print(f'Found {len(dms)} 1:1 DM conversations\n')
     sleep(1)
 
