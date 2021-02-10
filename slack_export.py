@@ -19,7 +19,7 @@ from slacker import Slacker
 #
 # channelId is the id of the channel/group/im you want to download history for.
 def get_history(pageable_object, channel_id: str, page_size: int = 100):
-    messages = []
+    messages = list()
     last_timestamp = None
 
     while True:
@@ -136,7 +136,6 @@ def fetch_public_channels(channels: List[dict]):
     for channel in channels:
         channel_dir = channel['name'].encode('utf-8')
         print(f'Fetching history for Public Channel: {channel_dir}')
-        channel_dir = channel['name'].encode('utf-8')
         mkdir(channel_dir)
         messages = get_history(slack.channels, channel['id'])
         parse_messages(channel_dir, messages, 'channel')
@@ -146,8 +145,8 @@ def fetch_public_channels(channels: List[dict]):
 def dump_channel_file():
     print("Making channels file")
 
-    private = []
-    mpim = []
+    private = list()
+    mpim = list()
 
     for group in groups:
         if group['is_mpim']:
@@ -171,12 +170,12 @@ def dump_channel_file():
 
 
 def filter_direct_messages_by_user_name_or_id(dms, user_names_or_ids):
-    user_ids = [userIdsByName.get(userNameOrId, userNameOrId) for userNameOrId in user_names_or_ids]
+    user_ids = [user_ids_by_name.get(userNameOrId, userNameOrId) for userNameOrId in user_names_or_ids]
     return [dm for dm in dms if dm['user'] in user_ids]
 
 
 def prompt_for_direct_messages(dms):
-    dm_names = [userNamesById.get(dm['user'], f"{dm['user']} (name unknown)") for dm in dms]
+    dm_names = [user_names_by_id.get(dm['user'], f"{dm['user']} (name unknown)") for dm in dms]
     selected_dms = pick(dm_names, 'Select the 1:1 DMs you want to export:', multi_select=True)
     return [dms[index] for _, index in selected_dms]
 
@@ -187,12 +186,12 @@ def fetch_direct_messages(dms):
     if dry_run:
         print("1:1 DMs selected for export:")
         for dm in dms:
-            print(userNamesById.get(dm['user'], dm['user'] + " (name unknown)"))
+            print(user_names_by_id.get(dm['user'], dm['user'] + " (name unknown)"))
         print()
         return
 
     for dm in dms:
-        name = userNamesById.get(dm['user'], dm['user'] + " (name unknown)")
+        name = user_names_by_id.get(dm['user'], dm['user'] + " (name unknown)")
         print(f"Fetching 1:1 DMs with {name}")
         dm_id = dm['id']
         mkdir(dm_id)
@@ -220,7 +219,7 @@ def fetch_groups(groups):
     for group in groups:
         group_dir = group['name']
         mkdir(group_dir)
-        messages = []
+        messages = list()
         print(f"Fetching history for Private Channel / Group DM: {group['name']}")
         messages = get_history(slack.groups, group['id'])
         parse_messages(group_dir, messages, 'group')
@@ -228,10 +227,10 @@ def fetch_groups(groups):
 
 # fetch all users for the channel and return a map userId -> userName
 def getUserMap():
-    global userNamesById, userIdsByName
+    global user_names_by_id, user_ids_by_name
     for user in users:
-        userNamesById[user['id']] = user['name']
-        userIdsByName[user['name']] = user['id']
+        user_names_by_id[user['id']] = user['name']
+        user_ids_by_name[user['name']] = user['id']
 
 
 # stores json of user info
@@ -283,7 +282,7 @@ def select_conversations(all_conversations, command_line_arg, filter_function, p
         else:
             return all_conversations
     else:
-        return []
+        return list()
 
 
 # Returns true if any conversations were specified on the command line
@@ -351,12 +350,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    users = []
-    channels = []
-    groups = []
-    dms = []
-    userNamesById = {}
-    userIdsByName = {}
+    users = list()
+    channels = list()
+    groups = list()
+    dms = list()
+    user_names_by_id = dict()
+    user_ids_by_name = dict()
 
     slack = Slacker(args.token)
     test_auth = do_test_auth()
