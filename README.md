@@ -30,9 +30,12 @@ One way to get your token is to obtain it here:
 https://api.slack.com/custom-integrations/legacy-tokens
 
 ## Dependencies
+* [Slacker](https://github.com/os/slacker)
+* [Pick](https://github.com/wong2/pick)
+
+Installation
 ```
-pip install slacker # https://github.com/os/slacker
-pip install pick # https://github.com/wong2/pick
+pip install -r requirements.txt
 ```
 
 ## Basic Usage
