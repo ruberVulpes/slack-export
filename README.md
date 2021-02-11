@@ -41,6 +41,8 @@ please see our API documentation."
     * `mpim:read`
     * `users:read`
 1. Scroll up and click `Install to Workspace`
+1. Your User Token will be under `OAuth Access Token`
+    * `xoxp-1234`
 
 ## Dependencies
 * [Slacker](https://github.com/os/slacker)
