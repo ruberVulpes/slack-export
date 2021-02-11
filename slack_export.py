@@ -344,8 +344,7 @@ if __name__ == "__main__":
     user_ids_by_name = dict()
 
     slack = Slacker(args.token)
-    test_auth = do_test_auth()
-    token_owner_id = test_auth['user_id']
+    token_owner_id = do_test_auth()['user_id']
 
     bootstrap_key_values()
 
