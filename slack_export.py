@@ -212,7 +212,7 @@ def fetch_groups(groups):
 
 
 # fetch all users for the channel and return a map userId -> userName
-def getUserMap():
+def get_user_map():
     global user_names_by_id, user_ids_by_name
     for user in users:
         user_names_by_id[user['id']] = user['name']
@@ -254,7 +254,7 @@ def bootstrap_key_values():
     print(f'Found {len(dms)} 1:1 DM conversations\n')
     sleep(1)
 
-    getUserMap()
+    get_user_map()
 
 
 # Returns the conversations to download based on the command-line arguments
